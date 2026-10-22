@@ -62,7 +62,7 @@
       <img id="poster" src="poster.png" alt="">
       <div id="startTitle">
         <h1>토끼 운석 슈팅</h1>
-        <div class="big">운석을 맞힐 때마다 1점! 300점이면 클리어예요!<br>스페이스(또는 발사 버튼)를 눌러 쏴요. 방향키·화면 끌기로 위아래도 움직여요.<br>+1, +2는 미사일이 늘고 -1은 줄어요.</div>
+        <div class="big">운석을 맞힐 때마다 1점! 300점이면 클리어예요!<br>미사일은 저절로 나가요. 방향키·화면 끌기로 상하좌우 움직여요.<br>+1, +2는 미사일이 늘고 -1은 줄어요.</div>
       </div>
       <button id="startBtn" class="btn">시작</button>
     </div>
@@ -83,7 +83,6 @@
   <div id="controls">
     <button id="leftBtn" class="ctl" aria-label="왼쪽">◀</button>
     <button id="upBtn" class="ctl" aria-label="위">▲</button>
-    <button id="fireBtn" class="ctl fire" aria-label="발사">발사</button>
     <button id="downBtn" class="ctl" aria-label="아래">▼</button>
     <button id="rightBtn" class="ctl" aria-label="오른쪽">▶</button>
   </div>
@@ -254,7 +253,7 @@
 
     // 자동 발사
     fireT -= dt;
-    if (fireT <= 0 && (keyF || btnF)) {
+    if (fireT <= 0) {
       fireT = .3;
       for (var i = 0; i < missiles; i++)
         bullets.push({ x: player.x + (i - (missiles - 1) / 2) * Math.min(15, 300 / missiles), y: player.y - 24 });
@@ -435,7 +434,6 @@
   }
   hold($('leftBtn'), function (v) { btnL = v; });
   hold($('rightBtn'), function (v) { btnR = v; });
-  hold($('fireBtn'), function (v) { btnF = v; });
   hold($('upBtn'), function (v) { btnU = v; });
   hold($('downBtn'), function (v) { btnD = v; });
 
