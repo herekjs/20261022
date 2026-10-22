@@ -62,7 +62,7 @@
       <img id="poster" src="poster.png" alt="">
       <div id="startTitle">
         <h1>토끼 운석 슈팅</h1>
-        <div class="big">운석을 맞힐 때마다 1점! 300점이면 클리어예요!<br>미사일은 저절로 나가요. 방향키·화면 끌기로 상하좌우 움직여요.<br>+1, +2는 미사일이 늘고 -1은 줄어요.</div>
+        <div class="big">운석을 맞힐 때마다 1점! 300점이면 클리어예요!<br>미사일은 저절로 나가요. 방향키·화면 끌기로 상하좌우 움직여요.<br>+1, +2는 미사일이 늘고 -1은 줄어요. 주황 >> 는 발사 속도가 빨라져요.</div>
       </div>
       <button id="startBtn" class="btn">시작</button>
     </div>
@@ -98,7 +98,7 @@
   var GOAL = 300, PTS = 1, MAX_LIVES = 5, MAX_MISSILES = 50;
   var state = 'ready'; // ready | play | over | clear
   var player, bullets, rocks, items, floats, stars;
-  var score, lives, hits, missiles, invul, fireT, rockT, itemT, last;
+  var speedUps = 0, score, lives, hits, missiles, invul, fireT, rockT, itemT, last;
   var keyL = false, keyR = false, btnL = false, btnR = false, dragX = null, dragY = null, keyF = false, btnF = false, keyU = false, keyD = false, btnU = false, btnD = false;
 
   // ----- 미디어 (없거나 막혀도 건너뜀) -----
@@ -193,7 +193,7 @@
   function reset() {
     player = { x: W / 2, y: H - 42 };
     bullets = []; rocks = []; items = []; floats = [];
-    score = 0; lives = MAX_LIVES; hits = 0; missiles = 1;
+    score = 0; lives = MAX_LIVES; hits = 0; missiles = 1; speedUps = 0;
     invul = 0; fireT = 0.2; rockT = 0.6; itemT = 4; last = 0;
     if (!stars) {
       stars = [];
@@ -229,7 +229,7 @@
       vy: (38 + Math.random() * 28) * (1 + 2.5 * Math.min(1, hits / GOAL)), a: Math.random() * 6, va: (Math.random() - .5) * 1.5, pts: pts });
   }
   function spawnItem() {
-    var q = Math.random(), v = q < .4 ? 1 : (q < .65 ? 2 : -1);
+    var q = Math.random(), v = q < .3 ? 1 : (q < .5 ? 2 : (q < .75 ? -1 : 0));
     items.push({ x: 24 + Math.random() * (W - 48), y: -20, v: v, vy: 70 });
   }
   function addFloat(x, y, t, c) { floats.push({ x: x, y: y, t: t, c: c, life: .8 }); }
@@ -254,7 +254,7 @@
     // 자동 발사
     fireT -= dt;
     if (fireT <= 0) {
-      fireT = .3;
+      fireT = .3 / Math.min(2, .5 + .1 * speedUps);
       for (var i = 0; i < missiles; i++)
         bullets.push({ x: player.x + (i - (missiles - 1) / 2) * Math.min(15, 300 / missiles), y: player.y - 24 });
     }
@@ -308,7 +308,7 @@
       var ddx = it.x - player.x, ddy = it.y - player.y;
       if (ddx * ddx + ddy * ddy < 34 * 34) {
         items.splice(ii, 1);
-        var before = missiles;
+        if (it.v === 0) { speedUps++; addFloat(it.x, it.y - 10, "속도업!", "#ffd24a"); continue; }
         missiles = Math.max(1, Math.min(MAX_MISSILES, missiles + it.v));
         addFloat(it.x, it.y - 10, (it.v > 0 ? '+' : '') + it.v, it.v > 0 ? '#7dffa0' : '#ff6b6b');
         updateHud();
@@ -362,19 +362,19 @@
     ctx.restore();
   }
   function drawItem(it) {
-    var good = it.v > 0;
+    var good = it.v >= 0;
     ctx.save(); ctx.translate(it.x, it.y);
     if (!good) { // 폭탄 심지
       ctx.strokeStyle = '#ccc'; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.moveTo(8, -16); ctx.quadraticCurveTo(14, -24, 20, -20); ctx.stroke();
       ctx.fillStyle = '#ffb938'; ctx.beginPath(); ctx.arc(20, -20, 3.5, 0, 7); ctx.fill();
     }
-    ctx.fillStyle = good ? '#2fbf6b' : '#2b2b3a';
+    ctx.fillStyle = it.v === 0 ? '#e0a020' : (good ? '#2fbf6b' : '#2b2b3a');
     ctx.strokeStyle = good ? '#b8ffd2' : '#ff6b6b'; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.arc(0, 0, 17, 0, 7); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#fff'; ctx.font = 'bold 18px sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText((good ? '+' : '') + it.v, 0, 1);
+    ctx.fillText(it.v === 0 ? '>>' : (good ? '+' : '') + it.v, 0, 1);
     ctx.restore();
   }
   function draw(now) {
