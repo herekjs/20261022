@@ -62,7 +62,7 @@
       <img id="poster" src="poster.png" alt="">
       <div id="startTitle">
         <h1>토끼 운석 슈팅</h1>
-        <div class="big">운석 15개를 맞혀 300점을 모으세요!<br>스페이스(또는 발사 버튼)를 눌러 쏴요.<br>+1, +2는 미사일이 늘고 -1은 줄어요.</div>
+        <div class="big">운석 15개를 맞혀 15점을 모으세요!<br>스페이스(또는 발사 버튼)를 눌러 쏴요.<br>+1, +2는 미사일이 늘고 -1은 줄어요.</div>
       </div>
       <button id="startBtn" class="btn">시작</button>
     </div>
@@ -75,7 +75,7 @@
 
     <div id="clear" class="overlay">
       <video id="endVideo" playsinline preload="none" src="ending.mp4"></video>
-      <div id="clearText"><h1>클리어!</h1><div class="big">300점 달성! 대단해요!</div></div>
+      <div id="clearText"><h1>클리어!</h1><div class="big">15점 달성! 대단해요!</div></div>
       <button id="againBtn" class="btn hidden">다시 하기</button>
     </div>
   </div>
@@ -94,7 +94,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var scoreEl = $('score'), livesEl = $('lives'), missEl = $('missiles');
 
-  var GOAL = 15, PTS = 20, MAX_LIVES = 5, MAX_MISSILES = 7;
+  var GOAL = 15, PTS = 1, MAX_LIVES = 5, MAX_MISSILES = 7;
   var state = 'ready'; // ready | play | over | clear
   var player, bullets, rocks, items, floats, stars;
   var score, lives, hits, missiles, invul, fireT, rockT, itemT, last;
