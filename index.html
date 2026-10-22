@@ -22,6 +22,8 @@
   #controls { width: 100%; flex: none; display: flex; gap: 10px; padding: 8px 12px; height: 76px; }
   .ctl { flex: 1; font-size: 34px; font-weight: 800; border: 0; border-radius: 16px; color: #fff;
     background: #3b4bd8; touch-action: none; }
+  .ctl.fire { background: #e0602f; font-size: 22px; flex: 1.2; }
+  .ctl.fire:active, .ctl.fire.on { background: #ff8a55; }
   .ctl:active, .ctl.on { background: #5b6bff; }
   #musicBtn { position: absolute; top: 6px; right: 6px; z-index: 5; font-size: 13px; padding: 6px 10px;
     border-radius: 14px; border: 0; background: rgba(0,0,0,.55); color: #fff; }
@@ -60,7 +62,7 @@
       <img id="poster" src="poster.png" alt="">
       <div id="startTitle">
         <h1>토끼 운석 슈팅</h1>
-        <div class="big">운석 15개를 맞혀 300점을 모으세요!<br>+1, +2는 미사일이 늘고 -1은 줄어요.</div>
+        <div class="big">운석 15개를 맞혀 300점을 모으세요!<br>스페이스(또는 발사 버튼)를 눌러 쏴요.<br>+1, +2는 미사일이 늘고 -1은 줄어요.</div>
       </div>
       <button id="startBtn" class="btn">시작</button>
     </div>
@@ -80,6 +82,7 @@
 
   <div id="controls">
     <button id="leftBtn" class="ctl" aria-label="왼쪽">◀</button>
+    <button id="fireBtn" class="ctl fire" aria-label="발사">발사</button>
     <button id="rightBtn" class="ctl" aria-label="오른쪽">▶</button>
   </div>
 </div>
@@ -95,7 +98,7 @@
   var state = 'ready'; // ready | play | over | clear
   var player, bullets, rocks, items, floats, stars;
   var score, lives, hits, missiles, invul, fireT, rockT, itemT, last;
-  var keyL = false, keyR = false, btnL = false, btnR = false, dragX = null;
+  var keyL = false, keyR = false, btnL = false, btnR = false, dragX = null, keyF = false, btnF = false;
 
   // ----- 미디어 (없거나 막혀도 건너뜀) -----
   var poster = $('poster');
@@ -242,8 +245,8 @@
 
     // 자동 발사
     fireT -= dt;
-    if (fireT <= 0) {
-      fireT = .5;
+    if (fireT <= 0 && (keyF || btnF)) {
+      fireT = .3;
       for (var i = 0; i < missiles; i++)
         bullets.push({ x: player.x + (i - (missiles - 1) / 2) * 15, y: player.y - 24 });
     }
@@ -401,12 +404,14 @@
   window.addEventListener('keydown', function (e) {
     if (e.key === 'ArrowLeft') { keyL = true; e.preventDefault(); }
     else if (e.key === 'ArrowRight') { keyR = true; e.preventDefault(); }
+    else if (e.key === ' ' || e.code === 'Space') { keyF = true; e.preventDefault(); }
   });
   window.addEventListener('keyup', function (e) {
     if (e.key === 'ArrowLeft') keyL = false;
     else if (e.key === 'ArrowRight') keyR = false;
+    else if (e.key === ' ' || e.code === 'Space') keyF = false;
   });
-  window.addEventListener('blur', function () { keyL = keyR = btnL = btnR = false; dragX = null; });
+  window.addEventListener('blur', function () { keyL = keyR = btnL = btnR = keyF = btnF = false; dragX = null; });
 
   function hold(el, setter) {
     el.addEventListener('pointerdown', function (e) { e.preventDefault(); try { el.setPointerCapture(e.pointerId); } catch (x) {} setter(true); el.classList.add('on'); });
@@ -417,6 +422,7 @@
   }
   hold($('leftBtn'), function (v) { btnL = v; });
   hold($('rightBtn'), function (v) { btnR = v; });
+  hold($('fireBtn'), function (v) { btnF = v; });
 
   function canvasX(e) {
     var rect = cv.getBoundingClientRect();
