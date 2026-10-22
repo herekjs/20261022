@@ -96,7 +96,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var scoreEl = $('score'), livesEl = $('lives'), missEl = $('missiles');
 
-  var GOAL = 300, PTS = 1, MAX_LIVES = 5, MAX_MISSILES = 7;
+  var GOAL = 300, PTS = 1, MAX_LIVES = 5, MAX_MISSILES = 50;
   var state = 'ready'; // ready | play | over | clear
   var player, bullets, rocks, items, floats, stars;
   var score, lives, hits, missiles, invul, fireT, rockT, itemT, last;
@@ -250,14 +250,14 @@
       var dy2 = dragY - player.y, st2 = 500 * dt;
       player.y += Math.abs(dy2) < st2 ? dy2 : (dy2 > 0 ? st2 : -st2);
     }
-    player.y = Math.max(H * .4, Math.min(H - 42, player.y));
+    player.y = Math.max(34, Math.min(H - 42, player.y));
 
     // 자동 발사
     fireT -= dt;
     if (fireT <= 0 && (keyF || btnF)) {
       fireT = .3;
       for (var i = 0; i < missiles; i++)
-        bullets.push({ x: player.x + (i - (missiles - 1) / 2) * 15, y: player.y - 24 });
+        bullets.push({ x: player.x + (i - (missiles - 1) / 2) * Math.min(15, 300 / missiles), y: player.y - 24 });
     }
     // 생성
     rockT -= dt;
