@@ -20,9 +20,9 @@
     aspect-ratio: 3 / 4; background: #151a4a; overflow: hidden; border-radius: 10px; }
   canvas { width: 100%; height: 100%; display: block; touch-action: none; }
   #controls { width: 100%; flex: none; display: flex; gap: 10px; padding: 8px 12px; height: 76px; }
-  .ctl { flex: 1; font-size: 34px; font-weight: 800; border: 0; border-radius: 16px; color: #fff;
+  .ctl { flex: 1; min-width: 0; font-size: 26px; font-weight: 800; border: 0; border-radius: 16px; color: #fff;
     background: #3b4bd8; touch-action: none; }
-  .ctl.fire { background: #e0602f; font-size: 22px; flex: 1.2; }
+  .ctl.fire { background: #e0602f; font-size: 18px; flex: 1.4; }
   .ctl.fire:active, .ctl.fire.on { background: #ff8a55; }
   .ctl:active, .ctl.on { background: #5b6bff; }
   #musicBtn { position: absolute; top: 6px; right: 6px; z-index: 5; font-size: 13px; padding: 6px 10px;
@@ -62,7 +62,7 @@
       <img id="poster" src="poster.png" alt="">
       <div id="startTitle">
         <h1>토끼 운석 슈팅</h1>
-        <div class="big">운석을 맞힐 때마다 1점! 300점이면 클리어예요!<br>스페이스(또는 발사 버튼)를 눌러 쏴요.<br>+1, +2는 미사일이 늘고 -1은 줄어요.</div>
+        <div class="big">운석을 맞힐 때마다 1점! 300점이면 클리어예요!<br>스페이스(또는 발사 버튼)를 눌러 쏴요. 방향키·화면 끌기로 위아래도 움직여요.<br>+1, +2는 미사일이 늘고 -1은 줄어요.</div>
       </div>
       <button id="startBtn" class="btn">시작</button>
     </div>
@@ -82,7 +82,9 @@
 
   <div id="controls">
     <button id="leftBtn" class="ctl" aria-label="왼쪽">◀</button>
+    <button id="upBtn" class="ctl" aria-label="위">▲</button>
     <button id="fireBtn" class="ctl fire" aria-label="발사">발사</button>
+    <button id="downBtn" class="ctl" aria-label="아래">▼</button>
     <button id="rightBtn" class="ctl" aria-label="오른쪽">▶</button>
   </div>
 </div>
@@ -98,7 +100,7 @@
   var state = 'ready'; // ready | play | over | clear
   var player, bullets, rocks, items, floats, stars;
   var score, lives, hits, missiles, invul, fireT, rockT, itemT, last;
-  var keyL = false, keyR = false, btnL = false, btnR = false, dragX = null, keyF = false, btnF = false;
+  var keyL = false, keyR = false, btnL = false, btnR = false, dragX = null, dragY = null, keyF = false, btnF = false, keyU = false, keyD = false, btnU = false, btnD = false;
 
   // ----- 미디어 (없거나 막혀도 건너뜀) -----
   var poster = $('poster');
@@ -225,7 +227,7 @@
     var n = 9, pts = [];
     for (var i = 0; i < n; i++) pts.push(.78 + Math.random() * .3);
     rocks.push({ x: r + Math.random() * (W - 2 * r), y: -r, r: r,
-      vy: (38 + Math.random() * 28) * (1 + 1.5 * Math.min(1, hits / GOAL)), a: Math.random() * 6, va: (Math.random() - .5) * 1.5, pts: pts });
+      vy: (38 + Math.random() * 28) * (1 + 2.5 * Math.min(1, hits / GOAL)), a: Math.random() * 6, va: (Math.random() - .5) * 1.5, pts: pts });
   }
   function spawnItem() {
     var q = Math.random(), v = q < .4 ? 1 : (q < .65 ? 2 : -1);
@@ -237,11 +239,18 @@
     // 이동
     var dir = (keyL || btnL ? -1 : 0) + (keyR || btnR ? 1 : 0);
     if (dir) player.x += dir * 260 * dt;
+    var dirY = (keyU || btnU ? -1 : 0) + (keyD || btnD ? 1 : 0);
+    if (dirY) player.y += dirY * 220 * dt;
     if (dragX !== null) {
       var d = dragX - player.x, step = 700 * dt;
       player.x += Math.abs(d) < step ? d : (d > 0 ? step : -step);
     }
     player.x = Math.max(22, Math.min(W - 22, player.x));
+    if (dragY !== null) {
+      var dy2 = dragY - player.y, st2 = 500 * dt;
+      player.y += Math.abs(dy2) < st2 ? dy2 : (dy2 > 0 ? st2 : -st2);
+    }
+    player.y = Math.max(H * .4, Math.min(H - 42, player.y));
 
     // 자동 발사
     fireT -= dt;
@@ -252,7 +261,7 @@
     }
     // 생성
     rockT -= dt;
-    if (rockT <= 0) { spawnRock(); rockT = (.65 + Math.random() * .4) * (1 - .45 * Math.min(1, hits / GOAL)); }
+    if (rockT <= 0) { spawnRock(); rockT = (.65 + Math.random() * .4) * (1 - .55 * Math.min(1, hits / GOAL)); }
     itemT -= dt;
     if (itemT <= 0) { spawnItem(); itemT = 5 + Math.random() * 3; }
 
@@ -404,14 +413,18 @@
   window.addEventListener('keydown', function (e) {
     if (e.key === 'ArrowLeft') { keyL = true; e.preventDefault(); }
     else if (e.key === 'ArrowRight') { keyR = true; e.preventDefault(); }
+    else if (e.key === 'ArrowUp') { keyU = true; e.preventDefault(); }
+    else if (e.key === 'ArrowDown') { keyD = true; e.preventDefault(); }
     else if (e.key === ' ' || e.code === 'Space') { keyF = true; e.preventDefault(); }
   });
   window.addEventListener('keyup', function (e) {
     if (e.key === 'ArrowLeft') keyL = false;
     else if (e.key === 'ArrowRight') keyR = false;
+    else if (e.key === 'ArrowUp') keyU = false;
+    else if (e.key === 'ArrowDown') keyD = false;
     else if (e.key === ' ' || e.code === 'Space') keyF = false;
   });
-  window.addEventListener('blur', function () { keyL = keyR = btnL = btnR = keyF = btnF = false; dragX = null; });
+  window.addEventListener('blur', function () { keyL = keyR = btnL = btnR = keyF = btnF = keyU = keyD = btnU = btnD = false; dragX = dragY = null; });
 
   function hold(el, setter) {
     el.addEventListener('pointerdown', function (e) { e.preventDefault(); try { el.setPointerCapture(e.pointerId); } catch (x) {} setter(true); el.classList.add('on'); });
@@ -423,19 +436,22 @@
   hold($('leftBtn'), function (v) { btnL = v; });
   hold($('rightBtn'), function (v) { btnR = v; });
   hold($('fireBtn'), function (v) { btnF = v; });
+  hold($('upBtn'), function (v) { btnU = v; });
+  hold($('downBtn'), function (v) { btnD = v; });
 
   function canvasX(e) {
     var rect = cv.getBoundingClientRect();
     return (e.clientX - rect.left) / rect.width * W;
   }
+  function canvasY(e) { var rc = cv.getBoundingClientRect(); return (e.clientY - rc.top) / rc.height * H - 14; }
   cv.addEventListener('pointerdown', function (e) {
     e.preventDefault();
     try { cv.setPointerCapture(e.pointerId); } catch (x) {}
-    dragX = canvasX(e);
+    dragX = canvasX(e); dragY = canvasY(e);
   });
-  cv.addEventListener('pointermove', function (e) { if (dragX !== null) dragX = canvasX(e); });
+  cv.addEventListener('pointermove', function (e) { if (dragX !== null) { dragX = canvasX(e); dragY = canvasY(e); } });
   ['pointerup', 'pointercancel'].forEach(function (n) {
-    cv.addEventListener(n, function () { dragX = null; });
+    cv.addEventListener(n, function () { dragX = dragY = null; });
   });
 
   reset();
